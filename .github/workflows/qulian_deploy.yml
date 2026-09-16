@@ -1,0 +1,39 @@
+name: 趣连 Auto Fetch (手动版)
+
+# 触发条件
+on:
+  workflow_dispatch:        # 仅保留这一行，代表只允许在网页端手动点击触发
+
+jobs:
+  update-nodes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr
+          pip install pytesseract pycryptodome pillow ddddocr
+
+      - name: Run Fetch Script
+        run: |
+          python "趣连全自动 (2).py"
+
+      - name: Commit and Push Nodes
+        run: |
+          mkdir -p subscribe
+          cp ~/Downloads/趣连.txt ./subscribe/qulian_nodes.txt
+          
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add ./subscribe/qulian_nodes.txt
+          git commit -m "Manual update Qulian nodes [skip ci]" || exit 0
+          git push
